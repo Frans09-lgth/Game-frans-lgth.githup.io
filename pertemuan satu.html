@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Puzzle Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #fdbb2d;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #fdbb2d;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .puzzle-container {
+            width: 400px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            background-color: #333;
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .puzzle-tile {
+            background-color: #fdbb2d;
+            color: #1a2a6c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .puzzle-tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .empty {
+            background-color: transparent;
+            cursor: default;
+        }
+
+        .empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #1a2a6c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background-color: #fdbb2d;
+            color: #1a2a6c;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(26, 42, 108, 0.8);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #fdbb2d;
+        }
+
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-btn {
+            padding: 8px 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .difficulty-btn.active {
+            background-color: #fdbb2d;
+            color: #1a2a6c;
+        }
+
+        @media (max-width: 600px) {
+            .puzzle-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .puzzle-tile {
+                font-size: 1.4rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Game Puzzle Interaktif</h1>
+            <p class="subtitle">Susun angka secara berurutan untuk memenangkan permainan!</p>
+        </header>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Langkah</div>
+                <div class="info-value" id="move-count">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Waktu</div>
+                <div class="info-value" id="timer">0s</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Tingkat Kesulitan</div>
+                <div class="info-value" id="difficulty-display">Mudah</div>
+            </div>
+        </div>
+        
+        <div class="difficulty">
+            <button class="difficulty-btn active" data-difficulty="easy">Mudah</button>
+            <button class="difficulty-btn" data-difficulty="medium">Sedang</button>
+            <button class="difficulty-btn" data-difficulty="hard">Sulit</button>
+        </div>
+        
+        <div class="game-area">
+            <div class="puzzle-container" id="puzzle-container">
+                <!-- Tile akan di-generate oleh JavaScript -->
+            </div>
+            
+            <div class="controls">
+                <button id="shuffle-btn">Acak Puzzle</button>
+                <button id="reset-btn">Mulai Ulang</button>
+                <button id="solve-btn">Selesaikan</button>
+            </div>
+            
+            <div class="message" id="message">
+                Selamat! Anda berhasil menyelesaikan puzzle!
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>Cara Bermain</h2>
+            <p>1. Klik pada kotak yang berdekatan dengan kotak kosong untuk memindahkannya.</p>
+            <p>2. Susun angka dari 1 hingga 15 secara berurutan dari kiri ke kanan, atas ke bawah.</p>
+            <p>3. Kotak kosong harus berada di posisi terakhir (kanan bawah).</p>
+            <p>4. Selesaikan puzzle dengan langkah sesedikit mungkin dan waktu secepat mungkin!</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemen DOM
+            const puzzleContainer = document.getElementById('puzzle-container');
+            const moveCountElement = document.getElementById('move-count');
+            const timerElement = document.getElementById('timer');
+            const shuffleButton = document.getElementById('shuffle-btn');
+            const resetButton = document.getElementById('reset-btn');
+            const solveButton = document.getElementById('solve-btn');
+            const messageElement = document.getElementById('message');
+            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            const difficultyDisplay = document.getElementById('difficulty-display');
+            
+            // Variabel game
+            let puzzleState = [];
+            let emptyIndex = 15; // Indeks kotak kosong
+            let moveCount = 0;
+            let timer = 0;
+            let timerInterval;
+            let isGameActive = false;
+            let difficulty = 'easy'; // easy, medium, hard
+            
+            // Inisialisasi game
+            initGame();
+            
+            // Fungsi inisialisasi game
+            function initGame() {
+                createPuzzle();
+                updatePuzzleDisplay();
+                setupEventListeners();
+                resetGame();
+            }
+            
+            // Membuat puzzle
+            function createPuzzle() {
+                puzzleContainer.innerHTML = '';
+                
+                for (let i = 0; i < 16; i++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('puzzle-tile');
+                    tile.dataset.index = i;
+                    
+                    if (i === 15) {
+                        tile.classList.add('empty');
+                    } else {
+                        tile.textContent = i + 1;
+                    }
+                    
+                    puzzleContainer.appendChild(tile);
+                }
+            }
+            
+            // Update tampilan puzzle
+            function updatePuzzleDisplay() {
+                const tiles = document.querySelectorAll('.puzzle-tile');
+                
+                tiles.forEach((tile, index) => {
+                    if (puzzleState[index] === 0) {
+                        tile.textContent = '';
+                        tile.classList.add('empty');
+                    } else {
+                        tile.textContent = puzzleState[index];
+                        tile.classList.remove('empty');
+                    }
+                });
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Klik pada tile
+                puzzleContainer.addEventListener('click', handleTileClick);
+                
+                // Tombol acak
+                shuffleButton.addEventListener('click', shufflePuzzle);
+                
+                // Tombol reset
+                resetButton.addEventListener('click', resetGame);
+                
+                // Tombol selesaikan
+                solveButton.addEventListener('click', solvePuzzle);
+                
+                // Tombol tingkat kesulitan
+                difficultyButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        difficulty = this.dataset.difficulty;
+                        difficultyDisplay.textContent = 
+                            difficulty === 'easy' ? 'Mudah' : 
+                            difficulty === 'medium' ? 'Sedang' : 'Sulit';
+                        resetGame();
+                    });
+                });
+                
+                // Kontrol keyboard
+                document.addEventListener('keydown', handleKeyPress);
+            }
+            
+            // Handle klik pada tile
+            function handleTileClick(e) {
+                if (!isGameActive) return;
+                
+                const clickedTile = e.target;
+                if (!clickedTile.classList.contains('puzzle-tile') || clickedTile.classList.contains('empty')) {
+                    return;
+                }
+                
+                const clickedIndex = parseInt(clickedTile.dataset.index);
+                moveTile(clickedIndex);
+            }
+            
+            // Pindahkan tile jika memungkinkan
+            function moveTile(tileIndex) {
+                const adjacentIndexes = getAdjacentIndexes(emptyIndex);
+                
+                if (adjacentIndexes.includes(tileIndex)) {
+                    // Tukar posisi tile dengan kotak kosong
+                    [puzzleState[tileIndex], puzzleState[emptyIndex]] = [puzzleState[emptyIndex], puzzleState[tileIndex]];
+                    emptyIndex = tileIndex;
+                    
+                    // Update tampilan
+                    updatePuzzleDisplay();
+                    
+                    // Update jumlah langkah
+                    moveCount++;
+                    moveCountElement.textContent = moveCount;
+                    
+                    // Cek apakah puzzle sudah terselesaikan
+                    if (isPuzzleSolved()) {
+                        endGame();
+                    }
+                }
+            }
+            
+            // Dapatkan indeks tile yang berdekatan dengan kotak kosong
+            function getAdjacentIndexes(emptyIndex) {
+                const adjacentIndexes = [];
+                const row = Math.floor(emptyIndex / 4);
+                const col = emptyIndex % 4;
+                
+                // Atas
+                if (row > 0) adjacentIndexes.push(emptyIndex - 4);
+                // Bawah
+                if (row < 3) adjacentIndexes.push(emptyIndex + 4);
+                // Kiri
+                if (col > 0) adjacentIndexes.push(emptyIndex - 1);
+                // Kanan
+                if (col < 3) adjacentIndexes.push(emptyIndex + 1);
+                
+                return adjacentIndexes;
+            }
+            
+            // Acak puzzle
+            function shufflePuzzle() {
+                resetGame();
+                
+                // Lakukan sejumlah langkah acak berdasarkan tingkat kesulitan
+                let shuffleCount;
+                switch(difficulty) {
+                    case 'easy':
+                        shuffleCount = 20;
+                        break;
+                    case 'medium':
+                        shuffleCount = 50;
+                        break;
+                    case 'hard':
+                        shuffleCount = 100;
+                        break;
+                    default:
+                        shuffleCount = 20;
+                }
+                
+                for (let i = 0; i < shuffleCount; i++) {
+                    const adjacentIndexes = getAdjacentIndexes(emptyIndex);
+                    const randomIndex = adjacentIndexes[Math.floor(Math.random() * adjacentIndexes.length)];
+                    [puzzleState[randomIndex], puzzleState[emptyIndex]] = [puzzleState[emptyIndex], puzzleState[randomIndex]];
+                    emptyIndex = randomIndex;
+                }
+                
+                updatePuzzleDisplay();
+                startGame();
+            }
+            
+            // Reset game
+            function resetGame() {
+                // Reset state puzzle
+                puzzleState = Array.from({length: 16}, (_, i) => i === 15 ? 0 : i + 1);
+                emptyIndex = 15;
+                
+                // Reset counter
+                moveCount = 0;
+                moveCountElement.textContent = moveCount;
+                
+                // Reset timer
+                clearInterval(timerInterval);
+                timer = 0;
+                timerElement.textContent = '0s';
+                
+                // Sembunyikan pesan
+                messageElement.style.display = 'none';
+                
+                // Update tampilan
+                updatePuzzleDisplay();
+                
+                // Hentikan game
+                isGameActive = false;
+            }
+            
+            // Mulai game
+            function startGame() {
+                isGameActive = true;
+                clearInterval(timerInterval);
+                timer = 0;
+                timerInterval = setInterval(() => {
+                    timer++;
+                    timerElement.textContent = `${timer}s`;
+                }, 1000);
+            }
+            
+            // Akhiri game
+            function endGame() {
+                isGameActive = false;
+                clearInterval(timerInterval);
+                
+                // Tampilkan pesan kemenangan
+                messageElement.textContent = `Selamat! Anda berhasil menyelesaikan puzzle dalam ${moveCount} langkah dan ${timer} detik!`;
+                messageElement.style.display = 'block';
+            }
+            
+            // Cek apakah puzzle sudah terselesaikan
+            function isPuzzleSolved() {
+                for (let i = 0; i < 15; i++) {
+                    if (puzzleState[i] !== i + 1) {
+                        return false;
+                    }
+                }
+                return puzzleState[15] === 0;
+            }
+            
+            // Selesaikan puzzle (otomatis)
+            function solvePuzzle() {
+                resetGame();
+                messageElement.textContent = "Puzzle telah diselesaikan!";
+                messageElement.style.display = 'block';
+            }
+            
+            // Handle penekanan tombol keyboard
+            function handleKeyPress(e) {
+                if (!isGameActive) return;
+                
+                let direction = null;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                        direction = 'up';
+                        break;
+                    case 'ArrowDown':
+                        direction = 'down';
+                        break;
+                    case 'ArrowLeft':
+                        direction = 'left';
+                        break;
+                    case 'ArrowRight':
+                        direction = 'right';
+                        break;
+                    default:
+                        return;
+                }
+                
+                e.preventDefault();
+                
+                const row = Math.floor(emptyIndex / 4);
+                const col = emptyIndex % 4;
+                let targetIndex = -1;
+                
+                switch(direction) {
+                    case 'up':
+                        if (row < 3) targetIndex = emptyIndex + 4;
+                        break;
+                    case 'down':
+                        if (row > 0) targetIndex = emptyIndex - 4;
+                        break;
+                    case 'left':
+                        if (col < 3) targetIndex = emptyIndex + 1;
+                        break;
+                    case 'right':
+                        if (col > 0) targetIndex = emptyIndex - 1;
+                        break;
+                }
+                
+                if (targetIndex !== -1) {
+                    moveTile(targetIndex);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
